@@ -241,7 +241,7 @@ import_mission_filename = 'missions/%s' % args.mission
 datetime = '{:%Y-%m-%d_%H-%M-%S}'.format(datetime.datetime.now())
 filename = args.mission.split('.',1)
 
-export_mission_filename = 'missions_complteted/%s-%s.%s' % (filename[0],datetime,filename[1])
+export_mission_filename = 'missions_completed/%s-%s.%s' % (filename[0],datetime,filename[1])
 
 #Upload mission from file
 upload_mission(import_mission_filename)
@@ -272,6 +272,7 @@ while True:
     print 'Battery voltage: %s' % vehicle.battery.voltage
     print 'Distance to waypoint (%s): %s' % (nextwaypoint, distance_to_current_waypoint())
     print 'Vehicle mode: %s' % vehicle.mode
+    print 'System status: %s' % vehicle.system_status.state
     time.sleep(1)
 
 #Download mission we just uploaded and save to a file
