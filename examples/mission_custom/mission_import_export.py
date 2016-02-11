@@ -13,6 +13,11 @@ from dronekit import connect, VehicleMode, LocationGlobalRelative, LocationGloba
 import time
 import datetime
 import math
+
+import socket
+import sys
+from thread import *
+
 from pymavlink import mavutil
 
 
@@ -30,6 +35,49 @@ args = parser.parse_args()
 print 'Connecting to vehicle on: %s. Loading mission: %s.' % (args.connect, args.mission)
 vehicle = connect(args.connect, wait_ready=True)    
 vehicle.heading_at_connect = vehicle.heading
+
+
+
+
+# HOST = ''   # Symbolic name, meaning all available interfaces
+# PORT = 8888 # Arbitrary non-privileged port
+ 
+# s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# print 'Socket created'
+ 
+# #Bind socket to local host and port
+# try:
+#     s.bind((HOST, PORT))
+# except socket.error as msg:
+#     print 'Bind failed. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
+#     sys.exit()
+     
+# print 'Socket bind complete'
+ 
+# #Start listening on socket
+# s.listen(10)
+# print 'Socket now listening'
+ 
+# #now keep talking with the client
+# while 1:
+#     #wait to accept a connection - blocking call
+#     conn, addr = s.accept()
+#     print 'Connected with ' + addr[0] + ':' + str(addr[1])
+     
+# s.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -255,6 +303,86 @@ vehicle.commands.next=1
 
 # Set mode to AUTO to start mission
 vehicle.mode = VehicleMode("AUTO")
+
+
+
+
+
+HOST = ''   # Symbolic name meaning all available interfaces
+PORT = 8888 # Arbitrary non-privileged port
+ 
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+print 'Socket created'
+ 
+#Bind socket to local host and port
+try:
+    s.bind((HOST, PORT))
+except socket.error as msg:
+    print 'Bind failed. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
+    sys.exit()
+     
+print 'Socket bind complete'
+ 
+#Start listening on socket
+s.listen(10)
+print 'Socket now listening'
+ 
+#Function for handling connections. This will be used to create threads
+def clientthread(conn):
+    #Sending message to connected client
+    conn.send('Welcome to the server. Type something and hit enter\n') #send only takes string
+     
+    #infinite loop so that function do not terminate and thread do not end.
+    while True:
+         
+        #Receiving from client
+        data = conn.recv(1024)
+
+        reply = 'OK...' + data
+
+        # *** New
+        # data will be the new land location and heading
+        # Should validate data here - should be (lat,lng,heading)
+        # Pass data to a helper function that will update the mission
+        # newLandingLocation(data)
+            # **** Ideally if we can create multiple sockets...
+            # **** then we could be "holding" the new location data
+            # **** and just before heading to the land wp check to see 
+            # **** if there is a new location in the holding socket
+
+        if not data: 
+            break
+     
+        conn.sendall(reply)
+     
+    #came out of loop
+    conn.close()
+ 
+#now keep talking with the client
+while 1:
+    #wait to accept a connection - blocking call
+    conn, addr = s.accept()
+    print 'Connected with ' + addr[0] + ':' + str(addr[1])
+     
+    #start new thread takes 1st argument as a function name to be run, second is the tuple of arguments to the function.
+    start_new_thread(clientthread ,(conn,))
+ 
+s.close()
+
+"""
+def newLandingLocation(location):
+    location = location.split(',', 3)
+    nextwaypoint = vehicle.commands.next
+"""
+
+
+
+
+
+
+
+
+
 
 
 # Monitor mission. 
